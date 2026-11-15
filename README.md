@@ -46,7 +46,7 @@ window appears when injection succeeds.
 4. The executable is output to `x64\Release\External Process Injection.exe`.
 
 ## Usage
-External Process Injection.exe <PID>
+Syntax: C:\..\..\..\..\External Process Injection.exe <PID>
 
 **Example:**
 
