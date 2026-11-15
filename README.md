@@ -1,7 +1,7 @@
 # Basic External Process Injection
 
-A minimal Windows example of **external process injection** written in C++. Injects
-position-independent shellcode into a process of your choosing (by PID) and pops
+A minimal Windows command-line example of **external process injection** written in C++.
+Injects position-independent shellcode into a process of your choosing (by PID) and pops
 `calc.exe` to demonstrate that the payload executed inside the target.
 
 > ⚠️ **For educational and research use only.** Do not use this on any process or machine
@@ -20,13 +20,13 @@ only standard Win32 APIs:
 5. `WaitForSingleObject` — wait for the payload to run
 6. `VirtualFreeEx` / `CloseHandle` — clean up
 
-The shellcode itself calls `WinExec("calc.exe", SW_SHOW)` (or `system("calc")`) inside
-the target, so you see a Calculator window appear when injection succeeds.
+The shellcode calls `WinExec("calc.exe", SW_SHOW)` inside the target, so a Calculator
+window appears when injection succeeds.
 
 ## Features
 
 - Clean, commented implementation of the standard external shellcode-injection chain
-- User-supplied **target PID** at runtime
+- **Target PID passed as a command-line argument**
 - No external dependencies beyond the Windows SDK
 - Ships with a Visual Studio solution (`External Process Injection.slnx`)
 - Error-checked at every Win32 call
@@ -43,27 +43,38 @@ the target, so you see a Calculator window appear when injection succeeds.
 2. Set the configuration to **Release** and platform to **x64** (or **x86** — must match
    your target).
 3. Build the solution (`Ctrl+Shift+B`).
-4. The executable is output to `x64\Release\` (or your chosen config folder).
+4. The executable is output to `x64\Release\External Process Injection.exe`.
 
 ## Usage
+External Process Injection.exe <PID>
+
+**Example:**
+
+`C:\Users\malma\source\repos\External Process Injection\x64\Release>"External Process Injection.exe" 23608
+Trying to open handle to process (23608)...
+Handle successfully opened!
+Allocated 277-bytes with PAGE_EXECUTE_READWRITE permissions
+Wrote 277 bytes to process memory!
+Popping a calc!`
+
 
 1. Launch the target process you want to inject into (one you own — e.g. `notepad.exe`).
 2. Find its PID (Task Manager → Details tab, or `tasklist` in a terminal).
-3. Run the injector and enter the PID when prompted.
+3. Run the injector from a terminal, passing the PID as the first argument.
 4. On success, `calc.exe` opens — that's the shellcode executing inside the target.
 
-If no calculator appears, the injection failed or the shellcode crashed — check the
-injector's error output (each Win32 call is checked and prints `GetLastError()` on
-failure).
+If no calculator appears, the injection failed or the shellcode crashed — the injector
+checks every Win32 call and prints `GetLastError()` on failure. Running it with no
+argument prints a usage line.
 
 ## How it works
 
-The injector allocates a page in the target with `VirtualAllocEx(..., PAGE_EXECUTE_READWRITE)`,
-writes the shellcode into it, and starts a remote thread at that address with
-`CreateRemoteThread`. The shellcode is position-independent and self-contained — it
-resolves `WinExec` and calls it, so no DLL path or `LoadLibrary` is needed. Because the
-thread runs inside the target, the Calculator it spawns is a child of the *target*
-process, not the injector.
+The injector parses the PID from `argv[1]`, allocates a page in the target with
+`VirtualAllocEx(..., PAGE_EXECUTE_READWRITE)`, writes the shellcode into it, and starts a
+remote thread at that address with `CreateRemoteThread`. The shellcode is
+position-independent and self-contained — it resolves `WinExec` and calls it, so no DLL
+path or `LoadLibrary` is needed. Because the thread runs inside the target, the Calculator
+it spawns is a child of the *target* process, not the injector.
 
 ## Notes
 
@@ -75,6 +86,11 @@ process, not the injector.
 - **Protected / elevated processes** require the injector to run elevated and may still
   fail with `ERROR_ACCESS_DENIED`.
 - The shellcode is a trivial `calc` payload — swap the byte array to change what runs.
+
+## License
+
+No license is specified in this repository. All rights reserved by the author unless
+stated otherwise.
 
 ---
 
