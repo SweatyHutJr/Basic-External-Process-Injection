@@ -87,11 +87,6 @@ it spawns is a child of the *target* process, not the injector.
   fail with `ERROR_ACCESS_DENIED`.
 - The shellcode is a trivial `calc` payload — swap the byte array to change what runs.
 
-## License
-
-No license is specified in this repository. All rights reserved by the author unless
-stated otherwise.
-
 ---
 
 > **Disclaimer:** This project is provided for learning about Windows process memory,
